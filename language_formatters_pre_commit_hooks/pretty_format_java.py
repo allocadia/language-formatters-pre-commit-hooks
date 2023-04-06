@@ -84,8 +84,29 @@ def pretty_format_java(argv: typing.Optional[typing.List[str]] = None) -> int:
         args.google_java_formatter_version,
     )
 
+    java_home_cmd = [
+        "/usr/libexec/java_home",
+        "-v",
+        "17"
+    ]
+
+    status, java_home = run_command(*(java_home_cmd))
+
+    if java_home:
+        print(
+            "{}: {}".format(
+                "The following java home will be used",
+                java_home,
+            ),
+        )
+
+    if status != 0:
+        return 1
+
+    java_binary = java_home.strip() + "/bin/java"
+
     cmd_args = [
-        "java",
+        java_binary,
         # export JDK internal classes for Java 16+
         "--add-exports",
         "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
