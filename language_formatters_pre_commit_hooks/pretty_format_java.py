@@ -48,6 +48,22 @@ def _download_google_java_formatter_jar(version: str) -> str:  # pragma: no cove
             ),
         )
 
+# Will try and get the closest installed java version to 17 if on mac, otherwise defaults to java in path
+def _get_java_binary_to_use():
+    java_home_cmd = [
+        "/usr/libexec/java_home",
+        "-v",
+        "17"
+    ]
+
+    status, java_home, _ = run_command(*(java_home_cmd))
+
+    try:
+        status, java_home, _ = run_command(*(java_home_cmd))
+        return java_home.strip() + "/bin/java"
+    except Exception as e:
+        return "java"
+
 
 @java_required
 def pretty_format_java(argv: typing.Optional[typing.List[str]] = None) -> int:
@@ -94,8 +110,10 @@ def pretty_format_java(argv: typing.Optional[typing.List[str]] = None) -> int:
     else:
         google_java_formatter_jar = args.google_java_formatter_jar
 
+    java_binary = _get_java_binary_to_use()
+    
     cmd_args = [
-        "java",
+        java_binary,
         # export JDK internal classes for Java 16+
         "--add-exports",
         "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
